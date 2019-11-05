@@ -57,6 +57,8 @@ export class Color {
      */
     ios: any /* UIColor */;
 
+    desktop?: any;
+
     /**
      * Specifies whether this Color is equal to the Color parameter.
      * @param value The Color to test.

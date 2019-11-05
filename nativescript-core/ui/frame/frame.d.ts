@@ -218,21 +218,21 @@ export function setFragmentClass(clazz: any): void;
 
 /**
  * @deprecated Use Frame.getFrameById() instead.
- * 
+ *
  * Gets a frame by id.
  */
 export function getFrameById(id: string): Frame;
 
 /**
  * @deprecated Use Frame.topmost() instead.
- * 
+ *
  * Gets the topmost frame in the frames stack. An application will typically has one frame instance. Multiple frames handle nested (hierarchical) navigation scenarios.
  */
 export function topmost(): Frame;
 
 /**
  * @deprecated Use Frame.goBack() instead.
- * 
+ *
  * Navigates back using the navigation hierarchy (if any). Updates the Frame stack as needed.
  * This method will start from the topmost Frame and will recursively search for an instance that has the canGoBack operation available.
  */
@@ -241,7 +241,7 @@ export function goBack();
 //@private
 /**
  * @deprecated Use Frame._stack() instead.
- * 
+ *
  * @private
  */
 export function _stack(): Array<Frame>;
@@ -483,11 +483,26 @@ export interface iOSFrame {
     //@endprivate
 }
 
+export interface DesktopFrame {
+    /**
+     * Gets or sets the visibility of navigationBar.
+     * Use NavBarVisibility enumeration - auto, never, always
+     */
+    navBarVisibility: "auto" | "never" | "always";
+
+    //@private
+    /**
+     * @private
+     */
+    _disableNavBarAnimation: boolean;
+    //@endprivate
+}
+
 export function setActivityCallbacks(activity: any /*androidx.appcompat.app.AppCompatActivity*/): void;
 //@private
 /**
  * @deprecated Use Frame.reloadPage() instead.
- * 
+ *
  * @private
  */
 export function reloadPage(context?: ModuleContext): void;

@@ -18,17 +18,18 @@ import {
     messageType as traceMessageType,
 } from "../../../trace";
 import { TextAlignment, TextDecoration, TextTransform, WhiteSpace } from "../../text-base";
+import { WeakRef } from "../../../utils/utils.desktop";
 
 export class Style extends Observable implements StyleDefinition {
     private unscopedCssVariables = new Map<string, string>();
     private scopedCssVariables = new Map<string, string>();
 
-    constructor(ownerView: ViewBase | WeakRef<ViewBase>) {
+    constructor(ownerView: ViewBase | WeakRef) {
         super();
 
         // HACK: Could not find better way for cross platform WeakRef type checking.
         if (ownerView.constructor.toString().indexOf("[native code]") !== -1) {
-            this.viewRef = <WeakRef<ViewBase>>ownerView;
+            this.viewRef = <WeakRef>ownerView;
         } else {
             this.viewRef = new WeakRef(<ViewBase>ownerView);
         }
@@ -191,7 +192,7 @@ export class Style extends Observable implements StyleDefinition {
 
     public PropertyBag: { new(): { [property: string]: string }, prototype: { [property: string]: string } };
 
-    public viewRef: WeakRef<ViewBase>;
+    public viewRef: WeakRef;
 
     public get view(): ViewBase {
         if (this.viewRef) {

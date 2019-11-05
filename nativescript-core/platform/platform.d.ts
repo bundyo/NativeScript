@@ -15,12 +15,22 @@ export const isAndroid: boolean;
  */
 export const isIOS: boolean;
 
+
+/**
+ * Gets a value indicating if the app is running on the Desktop platform.
+ */
+export const isDesktop: boolean;
+export const isWindows: boolean;
+export const isLinux: boolean;
+export const isOSX: boolean;
+
 /*
  * Enum holding platform names.
  */
 export module platformNames {
     export const android: string;
     export const ios: string;
+    export const desktop: string;
 }
 
 /*
@@ -61,7 +71,7 @@ export interface Device {
      * Gets the type of the current device.
      * Available values: "Phone", "Tablet".
      */
-    deviceType: "Phone" | "Tablet";
+    deviceType: "Phone" | "Tablet" | "Desktop";
 
     /**
      * Gets the uuid.

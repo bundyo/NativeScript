@@ -7,6 +7,7 @@ const MIN_TABLET_PIXELS = 600;
 export module platformNames {
     export const android = "Android";
     export const ios = "iOS";
+    export const desktop = "Desktop";
 }
 
 class Device implements DeviceDefinition {
@@ -153,3 +154,4 @@ export module screen {
 
 export const isAndroid = true;
 export const isIOS = false;
+export const isDesktop = false;

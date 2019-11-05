@@ -139,6 +139,8 @@ export abstract class View extends ViewBase {
      */
     public ios: any;
 
+    public desktop?: any;
+
     /**
      * Gets or sets the binding context of this instance. This object is used as a source for each Binding that does not have a source object specified.
      */

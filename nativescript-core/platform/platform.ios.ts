@@ -4,6 +4,7 @@ import { Device as DeviceDefinition, ScreenMetrics as ScreenMetricsDefinition } 
 export module platformNames {
     export const android = "Android";
     export const ios = "iOS";
+    export const desktop = "Desktop";
 }
 
 class Device implements DeviceDefinition {
@@ -127,3 +128,4 @@ export module screen {
 
 export const isIOS = true;
 export const isAndroid = false;
+export const isDesktop = false;

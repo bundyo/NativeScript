@@ -6,6 +6,7 @@ import { Observable, WrappedValue, PropertyChangeData, EventData } from "../../.
 import { addWeakEventListener, removeWeakEventListener } from "../weak-event-listener";
 import { bindingConstants, parentsRegex } from "../../builder/binding-builder";
 import { escapeRegexSymbols } from "../../../utils/utils";
+import { WeakRef } from "../../../utils/utils.desktop";
 import {
     isEnabled as traceEnabled,
     write as traceWrite,
@@ -95,12 +96,12 @@ export function isEventOrGesture(name: string, view: ViewBase): boolean {
 }
 
 export class Binding {
-    private source: WeakRef<Object>;
+    private source: WeakRef;
     // TODO: target should be hard reference!
-    public target: WeakRef<ViewBase>;
+    public target: WeakRef;
 
-    private sourceOptions: { instance: WeakRef<any>; property: string };
-    private targetOptions: { instance: WeakRef<Object>; property: string };
+    private sourceOptions: { instance: WeakRef; property: string };
+    private targetOptions: { instance: WeakRef; property: string };
 
     private sourceProperties: Array<string>;
     private propertyChangeListeners: Map<string, Observable> = new Map<string, Observable>();
@@ -291,7 +292,7 @@ export class Binding {
         return result;
     }
 
-    private addPropertyChangeListeners(source: WeakRef<Object>, sourceProperty: Array<string>, parentProperies?: string) {
+    private addPropertyChangeListeners(source: WeakRef, sourceProperty: Array<string>, parentProperies?: string) {
         let objectsAndProperties = this.resolveObjectsAndProperties(source.get(), sourceProperty);
         let prop = parentProperies || "";
 
@@ -579,7 +580,7 @@ export class Binding {
         return { view: result, index: index };
     }
 
-    private resolveOptions(obj: Object, properties: Array<string>): { instance: WeakRef<Object>; property: any } {
+    private resolveOptions(obj: Object, properties: Array<string>): { instance: WeakRef; property: any } {
         let objectsAndProperties = this.resolveObjectsAndProperties(obj, properties);
         if (objectsAndProperties.length > 0) {
             let resolvedObj = objectsAndProperties[objectsAndProperties.length - 1].instance;
@@ -594,7 +595,7 @@ export class Binding {
         return null;
     }
 
-    private updateOptions(options: { instance: WeakRef<any>; property: string }, value: any) {
+    private updateOptions(options: { instance: WeakRef; property: string }, value: any) {
         let optionsInstance;
         if (options && options.instance) {
             optionsInstance = options.instance.get();

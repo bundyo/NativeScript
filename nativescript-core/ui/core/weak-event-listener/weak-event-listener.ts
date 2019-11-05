@@ -1,10 +1,11 @@
 import { Observable, EventData } from "../../../data/observable";
+import { WeakRef } from "../../../utils/utils.desktop";
 
 const handlersForEventName = new Map<string, (eventData: EventData) => void>();
 const sourcesMap = new WeakMap<Observable, Map<string, Array<TargetHandlerPair>>>();
 
 class TargetHandlerPair {
-    tagetRef: WeakRef<Object>;
+    tagetRef: WeakRef;
     handler: (eventData: EventData) => void;
 
     constructor(target: Object, handler: (eventData: EventData) => void) {

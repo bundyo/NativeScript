@@ -12,6 +12,7 @@ import { Source } from "../../../utils/debug";
 import { Binding, BindingOptions, Observable, WrappedValue, PropertyChangeData, traceEnabled, traceWrite, traceCategories } from "../bindable";
 import { isIOS, isAndroid } from "../../../platform";
 import { layout } from "../../../utils/utils";
+import { WeakRef } from "../../../utils/utils.desktop";
 import { Length, paddingTopProperty, paddingRightProperty, paddingBottomProperty, paddingLeftProperty } from "../../styling/style-properties";
 
 // TODO: Remove this import!
@@ -175,6 +176,7 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     private _onUnloadedCalled: boolean = false;
     private _iosView: Object;
     private _androidView: Object;
+    private _desktopView: Object;
     private _style: Style;
     private _isLoaded: boolean;
     private _visualState: string;
@@ -299,6 +301,10 @@ export abstract class ViewBase extends Observable implements ViewBaseDefinition 
     get ios(): any {
         // this._disableNativeViewRecycling = true;
         return this._iosView;
+    }
+
+    get desktop(): any {
+        return this._desktopView;
     }
 
     get isLoaded(): boolean {

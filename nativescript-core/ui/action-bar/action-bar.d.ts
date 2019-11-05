@@ -46,6 +46,8 @@ export class ActionBar extends View {
      */
     ios: any /* UITabBarController */;
 
+    desktop?: any;
+
     /**
      * Gets or set the UIImageRenderingMode of the action bar icons in iOS. Defaults to "alwaysOriginal"
      * Valid values are:
@@ -161,6 +163,8 @@ export class ActionItem extends ViewBase {
      * Gets the Android specific options of the action item.
      */
     android: AndroidActionItemSettings;
+
+    desktop?: any;
 }
 
 /**

@@ -6,6 +6,7 @@ import { PropertyChangeData } from "../../data/observable";
 // Types.
 import { View, ViewBase, Property, CssProperty, InheritedCssProperty, Style, isAndroid, isIOS, Observable, makeValidator, makeParser, Length } from "../core/view";
 import { FormattedString, Span } from "./formatted-string";
+import {isDesktop} from "../../platform";
 
 export { FormattedString, Span };
 export * from "../core/view";

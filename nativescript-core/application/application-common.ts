@@ -37,6 +37,7 @@ import {
     CssChangedEventData,
     DiscardedErrorEventData,
     iOSApplication,
+    DesktopApplication,
     LoadAppCSSEventData,
     UnhandledErrorEventData
 } from "./application";
@@ -88,8 +89,8 @@ export const off: typeof events.off = events.off.bind(events);
 export const notify: typeof events.notify = events.notify.bind(events);
 export const hasListeners: typeof events.hasListeners = events.hasListeners.bind(events);
 
-let app: iOSApplication | AndroidApplication;
-export function setApplication(instance: iOSApplication | AndroidApplication): void {
+let app: iOSApplication | AndroidApplication | DesktopApplication;
+export function setApplication(instance: iOSApplication | AndroidApplication | DesktopApplication): void {
     app = instance;
 }
 

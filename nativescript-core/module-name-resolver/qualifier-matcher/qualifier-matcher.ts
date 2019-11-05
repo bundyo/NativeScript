@@ -72,7 +72,8 @@ const minHeightQualifier: QualifierSpec = {
 const platformQualifier: QualifierSpec = {
     isMatch: function (value: string): boolean {
         return value === "android" ||
-            value === "ios";
+            value === "ios" ||
+            value === "desktop";
 
     },
     getMatchValue(value: string, context: PlatformContext): number {

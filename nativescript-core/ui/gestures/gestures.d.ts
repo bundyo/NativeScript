@@ -131,7 +131,9 @@ export interface GestureEventData extends EventData {
     /**
      * Gets the underlying native android specific [gesture detector](http://developer.android.com/reference/android/view/GestureDetector.html).
      */
-    android: any
+    android: any,
+
+    desktop?: any
 }
 
 /**

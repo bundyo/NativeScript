@@ -7,6 +7,9 @@
     "url": "https://github.com/NativeScript/NativeScript"
   },
   "license": "Apache-2.0",
+  "dependencies": {
+    "@nodegui/nodegui": "0.3.1"
+  },
   "devDependencies": {
     "@microsoft/api-extractor": "^7.5.0",
     "@types/chai": "^4.0.4",

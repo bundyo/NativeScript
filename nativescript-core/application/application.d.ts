@@ -325,6 +325,13 @@ export let android: AndroidApplication;
 export let ios: iOSApplication;
 
 /**
+ * This is the Desktop-specific application object instance.
+ * Encapsulates methods and properties specific to the iOS platform.
+ * Will be undefined when TargetOS is Android.
+ */
+export let desktop: DesktopApplication;
+
+/**
  * Data for the Android activity events.
  */
 export interface AndroidActivityEventData {
@@ -657,6 +664,30 @@ export interface iOSApplication {
      * @param onReceiveCallback A callback function that will be called each time the observer receives a notification.
      */
     removeNotificationObserver(observer: any, notificationName: string): void;
+}
+
+/* tslint:disable */
+/**
+ * The abstraction of an iOS-specific application object.
+ */
+export interface DesktopApplication {
+    /**
+     * Gets or sets the orientation of the application.
+     * Available values: "portrait", "landscape", "unknown".
+     */
+    orientation: "portrait" | "landscape" | "unknown";
+
+    /**
+     * Gets the system appearance.
+     * Available values: "dark", "light", null.
+     * Null for iOS <= 11.
+     */
+    systemAppearance: "dark" | "light" | null;
+
+    /**
+     * The [UIApplication](https://developer.apple.com/library/ios/documentation/UIKit/Reference/UIApplication_Class/index.html).
+     */
+    nativeApp: any /* UIApplication */;
 }
 
 /**

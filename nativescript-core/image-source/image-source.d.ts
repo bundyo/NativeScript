@@ -36,6 +36,11 @@ export class ImageSource {
     android: any /* android.graphics.Bitmap */;
 
     /**
+     * The Desktop-specific []() instance.
+     */
+    desktop: any /* */;
+
+    /**
      * Loads this instance from the specified asset asynchronously.
      * @param asset The ImageAsset instance used to create ImageSource.
      */
@@ -278,7 +283,7 @@ export function fromUrl(url: string): Promise<ImageSource>;
 export function fromFileOrResource(path: string): ImageSource;
 
 /**
- * @deprecated Please use utils.isFileOrResourcePath instead. 
+ * @deprecated Please use utils.isFileOrResourcePath instead.
  * Returns true if the specified path points to a resource or local file.
  * @param path The path.
  */

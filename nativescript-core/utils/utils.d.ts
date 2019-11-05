@@ -253,6 +253,10 @@ export module ios {
     export function getVisibleViewController(rootViewController: any/* UIViewController*/): any/* UIViewController*/;
 }
 
+export module desktop {
+    export const MajorVersion: number;
+}
+
 /**
  * An utility function that invokes garbage collection on the JavaScript side.
  */

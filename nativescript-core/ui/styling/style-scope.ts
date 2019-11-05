@@ -96,7 +96,7 @@ const applicationKeyframes: any = {};
 const animationsSymbol: symbol = Symbol("animations");
 const pattern: RegExp = /('|")(.*?)\1/;
 
-class CSSSource {
+export class CSSSource {
     private _selectors: RuleSet[] = [];
 
     private constructor(private _ast: SyntaxTree, private _url: string, private _file: string, private _keyframes: KeyframesMap, private _source: string) {
@@ -130,7 +130,7 @@ class CSSSource {
         return CSSSource.fromFile(appRelativeUri, keyframes);
     }
 
-    private static pathRelativeToApp(uri: string): string {
+    public static pathRelativeToApp(uri: string): string {
         if (!uri.startsWith("/")) {
             return uri;
         }
