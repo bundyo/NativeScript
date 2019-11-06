@@ -32,10 +32,10 @@ export class Page extends PageBase {
     public _addViewToNativeVisualTree(view: View, atIndex?: number): boolean {
         if (this.nativeViewProtected && view.nativeViewProtected) {
             if (view instanceof ActionBar) {
-                this._layout.addWidgetAt(view.nativeViewProtected, 0, 0);
+                this._layout.addWidget(view.nativeViewProtected);
                 view.nativeViewProtected.setInlineStyle("height: 50;");
             } else {
-                this._layout.addWidgetAt(view.nativeViewProtected, 1, 0);
+                this._layout.addWidget(view.nativeViewProtected);
                 view.nativeViewProtected.setInlineStyle("flex: 1;");
             }
         }
