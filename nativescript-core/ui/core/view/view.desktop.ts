@@ -5,8 +5,15 @@ import {
     dip,
     backgroundColorProperty,
     colorProperty,
-    borderTopColorProperty, borderBottomColorProperty, borderRightColorProperty, borderLeftColorProperty,
-    borderTopWidthProperty, borderBottomWidthProperty, borderRightWidthProperty, borderLeftWidthProperty
+    borderTopColorProperty,
+    borderBottomColorProperty,
+    borderRightColorProperty,
+    borderLeftColorProperty,
+    borderTopWidthProperty,
+    borderBottomWidthProperty,
+    borderRightWidthProperty,
+    borderLeftWidthProperty,
+    borderTopLeftRadiusProperty, borderTopRightRadiusProperty, borderBottomLeftRadiusProperty, borderBottomRightRadiusProperty
 } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
 // Types.
@@ -32,6 +39,7 @@ import { topmost } from "../../frame/frame-stack";
 //import { AndroidActivityBackPressedEventData, android as androidApp } from "../../../application";
 import { device } from "../../../platform";
 import lazy from "../../../utils/lazy";
+import style = android.R.style;
 
 export * from "./view-common";
 
@@ -244,38 +252,85 @@ function getModalOptions(domId: number): DialogOptions {
 
 export class StyleList {
     list: Map<string,string> = new Map();
+    parts: Object = {};
 
-    constructor(public view: View) {}
+    constructor(public view: any,
+                public element?: string,
+                parts?: Array<string>) {
+        if (parts) {
+            parts.forEach((part) => {
+                this.parts[part] = new Map();
+            })
+        }
+    }
 
-    set(name, style) {
-        this.list.set(name, style);
+    set(name, style, part?) {
+        if (part) {
+            this.parts[part].set(name, style);
+        } else {
+            this.list.set(name, style);
+        }
 
         return this;
     }
 
-    delete(name) {
-        this.list.delete(name);
+    delete(name, part?) {
+        if (part) {
+            this.parts[part].delete(name);
+        } else {
+            this.list.delete(name);
+        }
 
         return this;
     }
 
-    get(name?: string) {
-        if (name) {
+    get(name?: string | any) {
+        let list = this.list;
+
+        if (name && (typeof name === "string")) {
             return this.list.get(name);
+        } else {
+            list = name || list;
         }
 
         const output = [];
 
-        this.list.forEach((v, k) => {
+        list.forEach((v, k) => {
             output.push(`${k}: ${v}`);
         });
 
         return output.join(";");
     }
 
+    getPart(part: string) {
+        return this.get(this.parts[part]);
+    }
+
+    getStyleSheet(element: string) {
+        let styleSheet = `${element} {${this.get()}}`;
+
+        if (Object.keys(this.parts).length) {
+            for (const name in this.parts) {
+                styleSheet += `${element}::${name} {${this.getPart(name)}}`;
+            }
+        }
+
+        return styleSheet;
+    }
+
     apply() {
         if (this.view.nativeViewProtected) {
-            this.view.nativeViewProtected.setInlineStyle(this.get());
+            if (this.element) {
+                this.view.nativeViewProtected.setStyleSheet(this.getStyleSheet(this.element));
+            } else {
+                this.view.nativeViewProtected.setInlineStyle(this.get());
+            }
+        }
+    }
+
+    applyStyleSheet(element?: string) {
+        if (this.view.nativeViewProtected) {
+            this.view.nativeViewProtected.setStyleSheet(this.getStyleSheet(element || this.element));
         }
     }
 }
@@ -835,21 +890,45 @@ export class View extends ViewCommon {
         }
     }
 
-    [borderBottomColorProperty.setNative](value: number) {
+    [borderBottomWidthProperty.setNative](value: number) {
         if (this.desktop) {
             this.styles.set("border-bottom-width", value).apply();
         }
     }
 
-    [borderLeftColorProperty.setNative](value: number) {
+    [borderLeftWidthProperty.setNative](value: number) {
         if (this.desktop) {
             this.styles.set("border-left-width", value).apply();
         }
     }
 
-    [borderRightColorProperty.setNative](value: number) {
+    [borderRightWidthProperty.setNative](value: number) {
         if (this.desktop) {
             this.styles.set("border-right-width", value).apply();
+        }
+    }
+
+    [borderTopLeftRadiusProperty.setNative](value: number) {
+        if (this.desktop) {
+            this.styles.set("border-top-left-radius", value).apply();
+        }
+    }
+
+    [borderTopRightRadiusProperty.setNative](value: number) {
+        if (this.desktop) {
+            this.styles.set("border-top-right-radius", value).apply();
+        }
+    }
+
+    [borderBottomLeftRadiusProperty.setNative](value: number) {
+        if (this.desktop) {
+            this.styles.set("border-bottom-left-radius", value).apply();
+        }
+    }
+
+    [borderBottomRightRadiusProperty.setNative](value: number) {
+        if (this.desktop) {
+            this.styles.set("border-bottom-right-radius", value).apply();
         }
     }
 
@@ -1201,15 +1280,15 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
                 options = null;
             }
             if (length == "auto") { // tslint:disable-line
-                setPixels(this.nativeViewProtected, auto);
+                setPixels(this, auto);
             } else if (typeof length === "number") {
-                setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels(length)));
+                setPixels(this, layout.round(layout.toDevicePixels(length)));
             } else if (length.unit == "dip") { // tslint:disable-line
-                setPixels(this.nativeViewProtected, layout.round(layout.toDevicePixels(length.value)));
+                setPixels(this, layout.round(layout.toDevicePixels(length.value)));
             } else if (length.unit == "px") { // tslint:disable-line
-                setPixels(this.nativeViewProtected, layout.round(length.value));
+                setPixels(this, layout.round(length.value));
             } else if (length.unit == "%") { // tslint:disable-line
-                setPercent(this.nativeViewProtected, length.value);
+                setPercent(this, length.value);
             } else {
                 throw new Error(`Unsupported PercentLength ${length}`);
             }

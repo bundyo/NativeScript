@@ -7,8 +7,10 @@ import { profile } from "../../profiling";
 import { TouchGestureEventData, GestureTypes, TouchAction } from "../gestures";
 import { device } from "../../platform";
 import lazy from "../../utils/lazy";
-import {QPushButton} from "@nodegui/nodegui";
-import {uniqId} from "../../utils/utils.desktop";
+import { QPushButton } from "@nodegui/nodegui";
+import { uniqId } from "../../utils/utils.desktop";
+import { View } from "../core/view";
+import { StyleList } from "../core/view/view.desktop";
 
 export * from "./button-common";
 
@@ -42,21 +44,18 @@ function initializeClickListener(): void {
 
 export class Button extends ButtonBase {
     nativeViewProtected: QPushButton;
+    styles: StyleList = new StyleList(this);
 
     private _stateListAnimator: any;
-    private _highlightedHandler: (args: TouchGestureEventData) => void;
+    private _highlightedHandler: () => void;
+    private _releasedHandler: () => void;
 
     @profile
     public createNativeView() {
-        // if (!AndroidButton) {
-        //     AndroidButton = android.widget.Button;
-        // }
-
         const button = new QPushButton();
         button.setObjectName(uniqId());
-        // button.setInlineStyle("background-color: green");
 
-        return button; // new AndroidButton(this._context);
+        return button;
     }
 
     public initNativeView(): void {
@@ -66,6 +65,7 @@ export class Button extends ButtonBase {
         const clickListener = new ClickListener(this);
         nativeView.addEventListener("clicked", clickListener.onClick.bind(clickListener));
         (<any>nativeView).clickListener = clickListener;
+        this._updateButtonStateChangeHandler(true);
     }
 
     public disposeNativeView() {
@@ -86,21 +86,22 @@ export class Button extends ButtonBase {
 
     @PseudoClassHandler("normal", "highlighted", "pressed", "active")
     _updateButtonStateChangeHandler(subscribe: boolean) {
-        if (subscribe) {
-            this._highlightedHandler = this._highlightedHandler || ((args: TouchGestureEventData) => {
-                switch (args.action) {
-                    case TouchAction.up:
-                    case TouchAction.cancel:
-                        this._goToVisualState("normal");
-                        break;
-                    case TouchAction.down:
-                        this._goToVisualState("highlighted");
-                        break;
-                }
-            });
-            this.on(GestureTypes.touch, this._highlightedHandler);
-        } else {
-            this.off(GestureTypes.touch, this._highlightedHandler);
+        if (this.nativeViewProtected) {
+            if (subscribe) {
+                this._highlightedHandler = this._highlightedHandler || (() => {
+                    console.log();
+                    this._goToVisualState("highlighted");
+                });
+                this._releasedHandler = this._releasedHandler || (() => {
+                    console.log();
+                    this._goToVisualState("normal");
+                });
+                this.nativeViewProtected.addEventListener("pressed", this._highlightedHandler);
+                this.nativeViewProtected.addEventListener("released", this._releasedHandler);
+            } else {
+                this.nativeViewProtected.removeEventListener("pressed", this._highlightedHandler);
+                this.nativeViewProtected.removeEventListener("released", this._releasedHandler);
+            }
         }
     }
 

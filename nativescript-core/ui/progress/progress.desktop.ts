@@ -1,17 +1,47 @@
 ﻿import {
     ProgressBase, Color, valueProperty, maxValueProperty,
-    colorProperty, backgroundColorProperty, backgroundInternalProperty
+    backgroundInternalProperty, Style, CssProperty, makeParser, makeValidator, InheritedCssProperty
 } from "./progress-common";
 import { QProgressBar } from "@nodegui/nodegui";
-import { View } from "../core/view/view.desktop";
+import { StyleList, View } from "../core/view/view.desktop";
+import {uniqId} from "../../utils/utils.desktop";
+import {TextAlignment} from "../text-base";
 
 export * from "./progress-common";
 
+export const desktopChunkColorProperty = new CssProperty<Style, Color>({
+    name: "desktopChunkColor",
+    cssName: "desktop-chunk-color",
+    equalityComparer: Color.equals,
+    valueConverter: (v) => new Color(v)
+});
+desktopChunkColorProperty.register(Style);
+
+export const desktopChunkMarginProperty = new CssProperty<Style, number>({
+    name: "desktopChunkMargin",
+    cssName: "desktop-chunk-margin"
+});
+desktopChunkMarginProperty.register(Style);
+
+export const desktopChunkWidthProperty = new CssProperty<Style, number>({
+    name: "desktopChunkWidth",
+    cssName: "desktop-chunk-width"
+});
+desktopChunkWidthProperty.register(Style);
+
+const textAlignmentConverter = makeParser<TextAlignment>(makeValidator<TextAlignment>("initial", "left", "center", "right"));
+export const textAlignmentProperty = new InheritedCssProperty<Style, TextAlignment>({ name: "textAlignment", cssName: "text-align", defaultValue: "initial", valueConverter: textAlignmentConverter });
+textAlignmentProperty.register(Style);
+
 export class Progress extends ProgressBase {
     nativeViewProtected: QProgressBar;
+    styles: StyleList = new StyleList(<View><unknown>this, "QProgressBar", ["chunk"]);
 
     createNativeView() {
-        return new QProgressBar();
+        const view = new QProgressBar();
+        view.setObjectName(uniqId());
+
+        return view;
     }
 
     get desktop() {
@@ -32,18 +62,28 @@ export class Progress extends ProgressBase {
         this.desktop.setMaximum(value);
     }
 
-    [colorProperty.getDefault]() {
-        // return this.desktop.progressTintColor;
-    }
-    [colorProperty.setNative](value: Color) {
-        (<View><unknown>this).styles.set("color", value instanceof Color ? value.desktop : value).apply();
+    [desktopChunkColorProperty.setNative](value: Color) {
+        this.styles
+            .set("background-color", value instanceof Color ? value.desktop : value, "chunk")
+            .apply();
     }
 
-    [backgroundColorProperty.getDefault]() {
-        // return this.desktop.trackTintColor;
+    [desktopChunkMarginProperty.setNative](value: number) {
+        this.styles
+            .set("margin", value, "chunk")
+            .apply();
     }
-    [backgroundColorProperty.setNative](value: Color) {
-        (<View><unknown>this).styles.set("background-color", value instanceof Color ? value.desktop : value).apply();
+
+    [desktopChunkWidthProperty.setNative](value: Color) {
+        this.styles
+            .set("width", value, "chunk")
+            .apply();
+    }
+
+    [textAlignmentProperty.setNative](value: string) {
+        this.styles
+            .set("text-align", value)
+            .apply();
     }
 
     [backgroundInternalProperty.getDefault]() {
