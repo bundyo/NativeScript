@@ -5,7 +5,8 @@ import {
     dip,
     backgroundColorProperty,
     colorProperty,
-    borderTopColorProperty, borderBottomColorProperty, borderRightColorProperty, borderLeftColorProperty
+    borderTopColorProperty, borderBottomColorProperty, borderRightColorProperty, borderLeftColorProperty,
+    borderTopWidthProperty, borderBottomWidthProperty, borderRightWidthProperty, borderLeftWidthProperty
 } from ".";
 import { GestureTypes, GestureEventData } from "../../gestures";
 // Types.
@@ -762,9 +763,7 @@ export class View extends ViewCommon {
     }
 
     [backgroundColorProperty.getDefault](): any {
-        // This getter is never called.
-        // CssAnimationProperty use default value form their constructor.
-        return null;
+        return "transparent";
     }
     [backgroundColorProperty.setNative](value: Color) {
         if (this.desktop) {
@@ -774,28 +773,28 @@ export class View extends ViewCommon {
     }
 
     [paddingTopProperty.getDefault](): any {
-        // return { value: this.nativeViewProtected.style.paddingTop, unit: "px" }
+        return this.styles.get("padding-top");
     }
     [paddingTopProperty.setNative](value: Length) {
         this.styles.set("padding-top", value).apply();
     }
 
     [paddingRightProperty.getDefault](): any {
-        // return { value: this.nativeViewProtected.style.paddingRight, unit: "px" }
+        return this.styles.get("padding-right");
     }
     [paddingRightProperty.setNative](value: Length) {
         this.styles.set("padding-right", value).apply();
     }
 
     [paddingBottomProperty.getDefault](): any {
-        // return { value: this.nativeViewProtected.style.paddingBottom, unit: "px" }
+        return this.styles.get("padding-bottom");
     }
     [paddingBottomProperty.setNative](value: Length) {
         this.styles.set("padding-bottom", value).apply();
     }
 
     [paddingLeftProperty.getDefault](): any {
-        // return { value: this.nativeViewProtected.style.paddingLeft, unit: "px" }
+        return this.styles.get("padding-left");
     }
     [paddingLeftProperty.setNative](value: Length) {
         this.styles.set("padding-left", value).apply();
@@ -827,6 +826,30 @@ export class View extends ViewCommon {
         if (this.desktop) {
             let color = value instanceof Color ? value.desktop : value;
             this.styles.set("border-right-color", color).apply();
+        }
+    }
+
+    [borderTopWidthProperty.setNative](value: number) {
+        if (this.desktop) {
+            this.styles.set("border-top-width", value).apply();
+        }
+    }
+
+    [borderBottomColorProperty.setNative](value: number) {
+        if (this.desktop) {
+            this.styles.set("border-bottom-width", value).apply();
+        }
+    }
+
+    [borderLeftColorProperty.setNative](value: number) {
+        if (this.desktop) {
+            this.styles.set("border-left-width", value).apply();
+        }
+    }
+
+    [borderRightColorProperty.setNative](value: number) {
+        if (this.desktop) {
+            this.styles.set("border-right-width", value).apply();
         }
     }
 
@@ -1095,7 +1118,7 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
 
         if (this.nativeViewProtected && child.nativeViewProtected && this.nativeViewProtected.layout) {
             if (traceEnabled()) {
-                traceWrite(`${this}.nativeView.addView(${child}.nativeView, ${atIndex})`, traceCategories.VisualTreeEvents);
+                traceWrite(`${this}.nativeView.layout.addWidget(${child}.nativeView)`, traceCategories.VisualTreeEvents);
             }
 
             this.nativeViewProtected.layout.addWidget(child.nativeViewProtected);
@@ -1196,48 +1219,48 @@ function createNativePercentLengthProperty(options: NativePercentLengthPropertyO
 
 createNativePercentLengthProperty({
     setter: marginTopProperty.setNative,
-    get setPixels() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setMarginTop;*/ },
-    get setPercent() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setMarginTopPercent;*/ }
+    get setPixels() { return <any>((view, value)=>view.styles.set("margin-top", value).apply()); },
+    get setPercent() { return <any>((view, value)=>view.styles.set("margin-top", value).apply()); },
 });
 
 createNativePercentLengthProperty({
     setter: marginRightProperty.setNative,
-    get setPixels() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setMarginRight;*/ },
-    get setPercent() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setMarginRightPercent;*/ }
+    get setPixels() { return <any>((view, value)=>view.styles.set("margin-right", value).apply()); },
+    get setPercent() { return <any>((view, value)=>view.styles.set("margin-right", value).apply()); },
 });
 
 createNativePercentLengthProperty({
     setter: marginBottomProperty.setNative,
-    get setPixels() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setMarginBottom;*/ },
-    get setPercent() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setMarginBottomPercent;*/ }
+    get setPixels() { return <any>((view, value)=>view.styles.set("margin-bottom", value).apply()); },
+    get setPercent() { return <any>((view, value)=>view.styles.set("margin-bottom", value).apply()); },
 });
 
 createNativePercentLengthProperty({
     setter: marginLeftProperty.setNative,
-    get setPixels() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setMarginLeft;*/ },
-    get setPercent() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setMarginLeftPercent;*/ }
+    get setPixels() { return <any>((view, value)=>view.styles.set("margin-left", value).apply()); },
+    get setPercent() { return <any>((view, value)=>view.styles.set("margin-left", value).apply()); },
 });
 
 createNativePercentLengthProperty({
     setter: widthProperty.setNative,
     auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    get setPixels() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setWidth;*/ },
-    get setPercent() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setWidthPercent;*/ }
+    get setPixels() { return <any>((view, value)=>view.styles.set("width", value).apply()); },
+    get setPercent() { return <any>((view, value)=>view.styles.set("width", value).apply()); },
 });
 
 createNativePercentLengthProperty({
     setter: heightProperty.setNative,
     auto: -1, //android.view.ViewGroup.LayoutParams.MATCH_PARENT,
-    get setPixels() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setHeight;*/ },
-    get setPercent() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setHeightPercent;*/ }
+    get setPixels() { return <any>((view, value)=>view.styles.set("height", value).apply()); },
+    get setPercent() { return <any>((view, value)=>view.styles.set("height", value).apply()); },
 });
 
 createNativePercentLengthProperty({
     setter: "_setMinWidthNative",
-    get setPixels() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setMinWidth;*/ }
+    get setPixels() { return <any>((view, value)=>view.styles.set("min-width", value).apply()); },
 });
 
 createNativePercentLengthProperty({
     setter: "_setMinHeightNative",
-    get setPixels() { return <any>(()=>{}); /*return org.nativescript.widgets.ViewHelper.setMinHeight;*/ }
+    get setPixels() { return <any>((view, value)=>view.styles.set("min-height", value).apply()); },
 });
