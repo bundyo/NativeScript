@@ -1021,79 +1021,17 @@ export class View extends ViewCommon {
     // }
 
     [horizontalAlignmentProperty.getDefault](): HorizontalAlignment {
-        return "left"; // <HorizontalAlignment>org.nativescript.widgets.ViewHelper.getHorizontalAlignment(this.nativeViewProtected);
+        return "left";
     }
     [horizontalAlignmentProperty.setNative](value: HorizontalAlignment) {
-        const nativeView = this.nativeViewProtected;
-        const lp: any = nativeView.getLayoutParams(); // || new org.nativescript.widgets.CommonLayoutParams();
-        // Set only if params gravity exists.
-        if (lp.gravity !== undefined) {
-            switch (value) {
-                case "left":
-                    // lp.gravity = android.view.Gravity.LEFT | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
-                    if (lp.weight < 0) {
-                        lp.weight = -2;
-                    }
-                    break;
-                case "center":
-                    // lp.gravity = android.view.Gravity.CENTER_HORIZONTAL | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
-                    if (lp.weight < 0) {
-                        lp.weight = -2;
-                    }
-                    break;
-                case "right":
-                    // lp.gravity = android.view.Gravity.RIGHT | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
-                    if (lp.weight < 0) {
-                        lp.weight = -2;
-                    }
-                    break;
-                case "stretch":
-                    // lp.gravity = android.view.Gravity.FILL_HORIZONTAL | (lp.gravity & android.view.Gravity.VERTICAL_GRAVITY_MASK);
-                    if (lp.weight < 0) {
-                        lp.weight = -1;
-                    }
-                    break;
-            }
-            nativeView.setLayoutParams(lp);
-        }
+        this.styles.set("horizontal-align", value).apply();
     }
 
     [verticalAlignmentProperty.getDefault](): VerticalAlignment {
-        return "top"; // <VerticalAlignment>org.nativescript.widgets.ViewHelper.getVerticalAlignment(this.nativeViewProtected);
+        return "top";
     }
     [verticalAlignmentProperty.setNative](value: VerticalAlignment) {
-        const nativeView = this.nativeViewProtected;
-        const lp: any = nativeView.getLayoutParams(); // || new org.nativescript.widgets.CommonLayoutParams();
-        // Set only if params gravity exists.
-        if (lp.gravity !== undefined) {
-            switch (value) {
-                case "top":
-                    // lp.gravity = android.view.Gravity.TOP | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
-                    if (lp.height < 0) {
-                        lp.height = -2;
-                    }
-                    break;
-                case "middle":
-                    // lp.gravity = android.view.Gravity.CENTER_VERTICAL | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
-                    if (lp.height < 0) {
-                        lp.height = -2;
-                    }
-                    break;
-                case "bottom":
-                    // lp.gravity = android.view.Gravity.BOTTOM | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
-                    if (lp.height < 0) {
-                        lp.height = -2;
-                    }
-                    break;
-                case "stretch":
-                    // lp.gravity = android.view.Gravity.FILL_VERTICAL | (lp.gravity & android.view.Gravity.HORIZONTAL_GRAVITY_MASK);
-                    if (lp.height < 0) {
-                        lp.height = -1;
-                    }
-                    break;
-            }
-            nativeView.setLayoutParams(lp);
-        }
+        this.styles.set("vertical-align", value).apply();
     }
 
     [rotateProperty.setNative](value: number) {

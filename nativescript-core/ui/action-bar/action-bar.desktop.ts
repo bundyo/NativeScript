@@ -7,11 +7,9 @@ import {
 } from "./action-bar-common";
 import { ImageSource } from "../../image-source";
 import { desktop as desktopUtils, isFontIconURI } from "../../utils/utils";
-import {QGridLayout, QWidget} from "@nodegui/nodegui";
-import {uniqId} from "../../utils/utils.desktop";
-import {StyleList} from "../core/view/view.desktop";
-import * as application from "../../application";
-import {getRootView} from "../../application/application.desktop";
+import { FlexLayout, QGridLayout, QLabel, QWidget } from "@nodegui/nodegui";
+import { uniqId } from "../../utils/utils.desktop";
+import { StyleList } from "../core/view/view.desktop";
 
 export * from "./action-bar-common";
 
@@ -42,35 +40,76 @@ function loadActionIcon(item: ActionItemDefinition): any /* UIImage */ {
     return img;
 }
 
-class TapBarItemHandlerImpl {
-    private _owner: WeakRef<ActionItemDefinition>;
-
-    public static initWithOwner(owner: WeakRef<ActionItemDefinition>): TapBarItemHandlerImpl {
-        let handler = new TapBarItemHandlerImpl();
-        handler._owner = owner;
-
-        return handler;
+const menuItemClickListener: any = function onClick(v) {
+    if (v) {
+        v._emit(ActionItemBase.tapEvent);
     }
-
-    public tap(args) {
-        let owner = this._owner.get();
-        if (owner) {
-            owner._raiseTap();
-        }
-    }
-}
+};
 
 export class ActionItem extends ActionItemBase {
-    private _desktop = {
-        position: "left",
+    private _desktop: Object = {
+        position: "right",
         systemIcon: undefined
     };
+    private _label: QLabel;
+    public nativeViewProtected: QWidget;
 
-    public get desktop() {
+    public createNativeView() {
+        const view = new QWidget();
+        view.setObjectName(uniqId());
+        view.setLayout(new FlexLayout());
+
+        return view;
+    }
+
+    public initNativeView(): void {
+        super.initNativeView();
+        const view = this.nativeViewProtected;
+        view.addEventListener("clicked", menuItemClickListener.bind(this, this));
+        (<any>view).menuItemClickListener = menuItemClickListener;
+
+
+        this._label = new QLabel();
+        view.layout.addWidget(this._label);
+    }
+
+    public _addViewToNativeVisualTree(child: View): boolean {
+        super._addViewToNativeVisualTree(child);
+
+        if (this.nativeViewProtected && child.nativeViewProtected) {
+            (<FlexLayout>this.nativeViewProtected.layout).removeWidget(this._label);
+            this.nativeViewProtected.layout.addWidget(child.nativeViewProtected);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public _removeViewFromNativeVisualTree(child: View): void {
+        super._removeViewFromNativeVisualTree(child);
+
+        if (child.nativeViewProtected) {
+            (<FlexLayout>this.nativeViewProtected.layout).removeWidget(child.nativeViewProtected);
+        }
+    }
+
+    public disposeNativeView() {
+        (<any>this.nativeViewProtected).menuItemClickListener = null;
+        super.disposeNativeView();
+    }
+
+    set text(value) {
+        if (this._label) {
+            this._label.setText(value);
+        }
+    }
+
+    public get desktop(): Object {
         return this._desktop;
     }
     public set desktop(value: Object) {
-        throw new Error("ActionItem.desktop is read-only");
+        throw new Error("ActionItem.settings is read-only");
     }
 }
 
@@ -88,6 +127,9 @@ export class NavigationButton extends ActionItem {
 export class ActionBar extends ActionBarBase {
     nativeViewProtected: QWidget;
     public styles: StyleList;
+    private _titleWidget: QWidget;
+    private _leftWidget: QWidget;
+    private _rightWidget: QWidget;
 
     get desktop(): QWidget {
         const page = this.page;
@@ -100,9 +142,26 @@ export class ActionBar extends ActionBarBase {
 
     public createNativeView(): QWidget {
         const view = new QWidget();
-        const layout = new QGridLayout();
         view.setObjectName(uniqId());
-        view.setLayout(layout);
+        view.setLayout(new QGridLayout());
+
+        this._leftWidget = new QWidget();
+        this._leftWidget.setObjectName(uniqId());
+        this._leftWidget.setLayout(new FlexLayout());
+
+        view.layout.addWidget(this._leftWidget, 0, 0);
+
+        this._titleWidget = new QWidget();
+        this._titleWidget.setObjectName(uniqId());
+        this._titleWidget.setLayout(new FlexLayout());
+
+        view.layout.addWidget(this._titleWidget, 0, 1);
+
+        this._rightWidget = new QWidget();
+        this._rightWidget.setObjectName(uniqId());
+        this._rightWidget.setLayout(new FlexLayout());
+
+        view.layout.addWidget(this._rightWidget, 0, 2);
 
         return view;
     }
@@ -148,18 +207,6 @@ export class ActionBar extends ActionBarBase {
         this.layout(0, 0, width, height, false);
     }
 
-    private _getIconRenderingMode(): any {
-        switch (this.iosIconRenderingMode) {
-            case "alwaysOriginal":
-                // return UIImageRenderingMode.AlwaysOriginal;
-            case "alwaysTemplate":
-                // return UIImageRenderingMode.AlwaysTemplate;
-            case "automatic":
-            default:
-                // return UIImageRenderingMode.AlwaysOriginal;
-        }
-    }
-
     public _updateTitleAndTitleView() {
         if (!this.titleView) {
             // No title view - show the title
@@ -168,6 +215,10 @@ export class ActionBar extends ActionBarBase {
                 if (this.desktop) {
                     this.desktop.setWindowTitle(title);
                 }
+
+                const label = new QLabel();
+                label.setText(title);
+                this._titleWidget.layout.addWidget(label);
             }
         }
     }
@@ -179,130 +230,119 @@ export class ActionBar extends ActionBarBase {
             return;
         }
 
-        // const viewController = (<UIViewController>page.ios);
-        // const navigationItem: UINavigationItem = viewController.navigationItem;
-        // const navController = <UINavigationController>viewController.navigationController;
 
-        // if (!navController) {
-        //     return;
-        // }
+        // Add menu items
+        this._addActionItems();
 
-        // const navigationBar = navController.navigationBar;
-        // let previousController: UIViewController;
-
-        // Set Title
+        // Set title
         this._updateTitleAndTitleView();
 
-        // // Find previous ViewController in the navigation stack
-        // const indexOfViewController = navController.viewControllers.indexOfObject(viewController);
-        // if (indexOfViewController > 0 && indexOfViewController < navController.viewControllers.count) {
-        //     previousController = navController.viewControllers[indexOfViewController - 1];
-        // }
-        //
-        // // Set back button text
-        // if (previousController) {
-        //     if (this.navigationButton) {
-        //         let tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(this.navigationButton));
-        //         let barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(this.navigationButton.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
-        //         previousController.navigationItem.backBarButtonItem = barButtonItem;
-        //     } else {
-        //         previousController.navigationItem.backBarButtonItem = null;
+        // Set home icon
+        this._updateIcon();
+
+        // Set navigation button
+        this._updateNavigationButton();
+
+    }
+
+    public _updateNavigationButton() {
+        const navButton = this.navigationButton;
+        if (navButton && isVisible(navButton)) {
+            const systemIcon = navButton["desktop"].systemIcon;
+
+            // Set navigation content descripion, used by screen readers for the vision-impaired users
+            // this.nativeViewProtected.text = navButton.text || null;
+
+            let navBtn = new WeakRef(navButton);
+            this.nativeViewProtected.addEventListener("clicked", function (v) {
+                let owner = navBtn.get();
+                if (owner) {
+                    owner._raiseTap();
+                }
+            });
+        }
+        else {
+            //this.nativeViewProtected.setNavigationIcon(null);
+        }
+    }
+
+    public _updateIcon() {
+        //this.nativeViewProtected.icon = this.desktop.icon;
+        // let visibility = getIconVisibility(this.android.iconVisibility);
+        // if (visibility) {
+        //     let icon = this.web.icon;
+        //     if (icon !== undefined) {
+        //         let drawableOrId = getDrawableOrResourceId(icon, appResources);
+        //         if (drawableOrId) {
+        //             this.nativeViewProtected.setLogo(drawableOrId);
+        //         }
+        //     }
+        //     else {
+        //         let defaultIcon = application.android.nativeApp.getApplicationInfo().icon;
+        //         this.nativeViewProtected.setLogo(defaultIcon);
         //     }
         // }
-        //
-        // // Set back button image
-        // let img: UIImage;
-        // if (this.navigationButton && isVisible(this.navigationButton) && this.navigationButton.icon) {
-        //     img = loadActionIcon(this.navigationButton);
-        // }
-        //
-        // // TODO: This could cause issue when canceling BackEdge gesture - we will change the backIndicator to
-        // // show the one from the old page but the new page will still be visible (because we canceled EdgeBackSwipe gesutre)
-        // // Consider moving this to new method and call it from - navigationControllerDidShowViewControllerAnimated.
-        // if (img) {
-        //     let image = img.imageWithRenderingMode(UIImageRenderingMode.AlwaysOriginal);
-        //     navigationBar.backIndicatorImage = image;
-        //     navigationBar.backIndicatorTransitionMaskImage = image;
-        // } else {
-        //     navigationBar.backIndicatorImage = null;
-        //     navigationBar.backIndicatorTransitionMaskImage = null;
-        // }
-        //
-        // // Set back button visibility
-        // if (this.navigationButton) {
-        //     this.navigationButton._navigationItem = navigationItem;
-        //     navigationItem.setHidesBackButtonAnimated(!isVisible(this.navigationButton), false);
-        // }
-        //
-        // // Populate action items
-        // this.populateMenuItems(navigationItem);
-        //
-        // // update colors explicitly - they may have to be cleared form a previous page
-        this.updateColors(this.desktop);
-        //
-        // // the 'flat' property may have changed in between pages
-        // this.updateFlatness(navigationBar);
-        //
-        // if (!this.isLayoutValid) {
-        //     this.layoutInternal();
+        // else {
+        //     this.nativeViewProtected.setLogo(null);
         // }
     }
 
-    private populateMenuItems(navigationItem: UINavigationItem) {
-        const items = this.actionItems.getVisibleItems();
-        // const leftBarItems = NSMutableArray.new();
-        // const rightBarItems = NSMutableArray.new();
+    public _addActionItems() {
+        let items = this.actionItems.getVisibleItems();
+
         for (let i = 0; i < items.length; i++) {
-            const barButtonItem = this.createBarButtonItem(items[i]);
-            if (items[i].desktop.position === "left") {
-                // leftBarItems.addObject(barButtonItem);
-            } else {
-                // rightBarItems.insertObjectAtIndex(barButtonItem, 0);
+            let item = <ActionItem>items[i];
+
+            if (item.icon) {
+                //item.nativeViewProtected["icon"] = item.icon;
+            }
+
+            if (item.desktop["position"] === "left") {
+                //item.nativeViewProtected["position"] = item.desktop["position"];
+            }
+
+            if (item.nativeViewProtected) {
+                this[`_${item.desktop["position"]}Widget`].layout.removeWidget(item.nativeViewProtected);
+                this[`_${item.desktop["position"]}Widget`].layout.addWidget(item.nativeViewProtected);
             }
         }
-
-        // navigationItem.setLeftBarButtonItemsAnimated(<any>leftBarItems, false);
-        // navigationItem.setRightBarButtonItemsAnimated(<any>rightBarItems, false);
-        // if (leftBarItems.count > 0) {
-            navigationItem.leftItemsSupplementBackButton = true;
-        // }
     }
 
-    private createBarButtonItem(item: ActionItemDefinition): any {
-        // const tapHandler = TapBarItemHandlerImpl.initWithOwner(new WeakRef(item));
-        // associate handler with menuItem or it will get collected by JSC.
-        // (<any>item).handler = tapHandler;
-
-        // let barButtonItem: UIBarButtonItem;
-        // if (item.actionView && item.actionView.ios) {
-        //     let recognizer = UITapGestureRecognizer.alloc().initWithTargetAction(tapHandler, "tap");
-        //     item.actionView.ios.addGestureRecognizer(recognizer);
-        //     barButtonItem = UIBarButtonItem.alloc().initWithCustomView(item.actionView.ios);
-        // } else if (item.ios.systemIcon !== undefined) {
-        //     let id: number = item.ios.systemIcon;
-        //     if (typeof id === "string") {
-        //         id = parseInt(id);
-        //     }
-        //
-        //     barButtonItem = UIBarButtonItem.alloc().initWithBarButtonSystemItemTargetAction(id, tapHandler, "tap");
-        // } else if (item.icon) {
-        //     const img = loadActionIcon(item);
-        //     if (img) {
-        //         const image = img.imageWithRenderingMode(this._getIconRenderingMode());
-        //         barButtonItem = UIBarButtonItem.alloc().initWithImageStyleTargetAction(image, UIBarButtonItemStyle.Plain, tapHandler, "tap");
-        //     }
-        // } else {
-        //     barButtonItem = UIBarButtonItem.alloc().initWithTitleStyleTargetAction(item.text + "", UIBarButtonItemStyle.Plain, tapHandler, "tap");
-        // }
-
-        // if (item.text) {
-        //     barButtonItem.isAccessibilityElement = true;
-        //     barButtonItem.accessibilityLabel = item.text;
-        //     barButtonItem.accessibilityTraits = UIAccessibilityTraitButton;
-        // }
-        //
-        // return barButtonItem;
+    public _onTitlePropertyChanged() {
+        if (this.nativeViewProtected) {
+            this._updateTitleAndTitleView();
+        }
     }
+
+    public _onIconPropertyChanged() {
+        if (this.nativeViewProtected) {
+            this._updateIcon();
+        }
+    }
+
+    public _addViewToNativeVisualTree(child: View, atIndex: number = Number.MAX_VALUE): boolean {
+        super._addViewToNativeVisualTree(child);
+
+        if (this.nativeViewProtected && child.nativeViewProtected) {
+            this.nativeViewProtected.layout.addWidget(child.nativeViewProtected, 0, atIndex);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    public _removeViewFromNativeVisualTree(child: View): void {
+        super._removeViewFromNativeVisualTree(child);
+
+        if (child.nativeViewProtected) {
+            (<FlexLayout>this.nativeViewProtected.layout).removeWidget(child.nativeViewProtected);
+        }
+    }
+
+    // getTitle() {
+    //     return this.nativeViewProtected.querySelector(".ns-action-bar__title");
+    // }
 
     private updateColors(navBar: QWidget) {
         const color = this.color;
@@ -320,10 +360,6 @@ export class ActionBar extends ActionBarBase {
         } else {
             this.styles.set("color", "default").apply();
         }
-    }
-
-    public _onTitlePropertyChanged() {
-        this._updateTitleAndTitleView();
     }
 
     private updateFlatness(navBar: UINavigationBar) {

@@ -1,9 +1,10 @@
-import { View, PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty } from "./page-common";
+import { PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty } from "./page-common";
 import { ActionBar } from "../action-bar";
-import {FlexLayout, QGridLayout, QWidget} from "@nodegui/nodegui";
+import { View } from "../core/view/view.desktop"
+// @ts-ignore
+import { FlexLayout, NodeWidget, QGridLayout, QWidget } from "@nodegui/nodegui";
 import { device } from "../../platform";
 import { profile } from "../../profiling";
-import { ViewBase } from "./page-common";
 
 export * from "./page-common";
 
@@ -13,13 +14,13 @@ const STATUS_BAR_DARK_BCKG = 1711276032;
 
 export class Page extends PageBase {
     public nativeViewProtected: QWidget;
-    private _layout: QGridLayout;
+    private _actionBarWidget: QWidget;
+    private _contentWidget: QWidget;
 
     public createNativeView() {
         const view = new QWidget();
         view.setObjectName("root");
-        this._layout = new QGridLayout();
-        view.setLayout(this._layout);
+        view.setLayout(new FlexLayout());
 
         return view;
     }
@@ -30,17 +31,25 @@ export class Page extends PageBase {
     }
 
     public _addViewToNativeVisualTree(view: View, atIndex?: number): boolean {
+        let widget;
+
         if (this.nativeViewProtected && view.nativeViewProtected) {
             if (view instanceof ActionBar) {
-                this._layout.addWidget(view.nativeViewProtected);
-                view.nativeViewProtected.setInlineStyle("height: 50;");
+                this._actionBarWidget = view.nativeViewProtected;
+                widget = this.nativeViewProtected.layout.addWidget(view.nativeViewProtected);
+                (<View>view).styles.set("min-height", 50).apply();
+
+                if (this._contentWidget) {
+                    (<FlexLayout>this.nativeViewProtected.layout).removeWidget(this._contentWidget);
+                    this.nativeViewProtected.layout.addWidget(this._contentWidget);
+                }
             } else {
-                this._layout.addWidget(view.nativeViewProtected);
-                view.nativeViewProtected.setInlineStyle("flex: 1;");
+                this._contentWidget = view.nativeViewProtected;
+                widget = this.nativeViewProtected.layout.addWidget(view.nativeViewProtected);
             }
         }
 
-        return super._addViewToNativeVisualTree(view, atIndex);
+        return widget;
     }
 
     @profile
