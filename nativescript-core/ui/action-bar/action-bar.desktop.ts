@@ -160,21 +160,21 @@ export class ActionBar extends ActionBarBase {
         this._leftWidget.setLayout(new FlexLayout());
         this._leftWidget.setInlineStyle("flex-direction: row; flex: 1; align-items: center; justify-content: flex-start;");
 
-        view.layout.addWidget(this._leftWidget, 0, 0);
+        view.layout.addWidget(this._leftWidget);
 
         this._titleWidget = new QWidget();
         this._titleWidget.setObjectName(uniqId());
         this._titleWidget.setLayout(new FlexLayout());
         this._titleWidget.setInlineStyle("flex: 0; align-items: center; justify-content: center;");
 
-        view.layout.addWidget(this._titleWidget, 0 ,1);
+        view.layout.addWidget(this._titleWidget);
 
         this._rightWidget = new QWidget();
         this._rightWidget.setObjectName(uniqId());
         this._rightWidget.setLayout(new FlexLayout());
         this._rightWidget.setInlineStyle("flex-direction: row; flex: 1; align-items: center; justify-content: flex-end;");
 
-        view.layout.addWidget(this._rightWidget, 0, 2);
+        view.layout.addWidget(this._rightWidget);
 
         return view;
     }
