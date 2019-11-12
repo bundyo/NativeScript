@@ -1024,14 +1024,36 @@ export class View extends ViewCommon {
         return "left";
     }
     [horizontalAlignmentProperty.setNative](value: HorizontalAlignment) {
-        this.styles.set("horizontal-align", value).apply();
+        switch (value) {
+            case "left":
+                this.styles.set("align-self", "flex-start").apply();
+                break;
+            case "right":
+                this.styles.set("align-self", "flex-end").apply();
+                break;
+
+            default:
+                this.styles.set("align-self", value).apply();
+
+        }
     }
 
     [verticalAlignmentProperty.getDefault](): VerticalAlignment {
         return "top";
     }
     [verticalAlignmentProperty.setNative](value: VerticalAlignment) {
-        this.styles.set("vertical-align", value).apply();
+        switch (value) {
+            case "top":
+                this.styles.set("align-self", "flex-start").apply();
+                break;
+            case "bottom":
+                this.styles.set("align-self", "flex-end").apply();
+                break;
+
+            default:
+                this.styles.set("align-self", value).apply();
+
+        }
     }
 
     [rotateProperty.setNative](value: number) {
@@ -1169,7 +1191,7 @@ export class CustomLayoutView extends View implements CustomLayoutViewDefinition
         const nativeView = this.nativeViewProtected;
         const childView = child.nativeViewProtected;
         if (nativeView && childView) {
-            nativeView.removeView(childView);
+            nativeView.layout.removeWidget(childView);
             if (traceEnabled()) {
                 traceWrite(`${nativeView}.removeView(${childView})`, traceCategories.VisualTreeEvents);
                 traceNotifyEvent(child, "childInLayoutRemovedFromNativeVisualTree");

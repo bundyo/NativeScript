@@ -26,7 +26,7 @@ import {
 import * as appCommon from "./application-common";
 
 import {
-    QApplication
+    QApplication, QMainWindow
 } from "@nodegui/nodegui";
 
 import {
@@ -49,7 +49,8 @@ export class DesktopApplication extends Observable implements DesktopApplication
     private _rootView: View = null;
     public systemAppearance: "dark" | "light" | null;
     public paused: boolean;
-    public nativeApp: QApplication = null;
+    public nativeApp: QApplication;
+    public mainWindow: QMainWindow;
     public packageName: string;
 
     public init(nativeApp: any) {
@@ -60,12 +61,6 @@ export class DesktopApplication extends Observable implements DesktopApplication
         if (this.nativeApp) {
             throw new Error("application.android already initialized.");
         }
-
-        notify({
-            eventName: launchEvent,
-            object: this,
-            web: null
-        });
 
         if (!this._rootView) {
             // try to navigate to the mainEntry (if specified)
@@ -87,6 +82,18 @@ export class DesktopApplication extends Observable implements DesktopApplication
         if (!this._rootView.isLoaded) {
             this._rootView.callLoaded();
         }
+
+        this.mainWindow = new QMainWindow();
+        this.mainWindow.setMinimumSize(640, 480);
+        this.mainWindow.setCentralWidget(this._rootView.desktop);
+        this.mainWindow.setObjectName("mainWindow");
+
+        this.mainWindow.show();
+
+        notify({
+            eventName: launchEvent,
+            object: this
+        });
 
         return this._rootView;
     }
@@ -130,8 +137,7 @@ export function _start(entry?: NavigationEntry | string) {
     started = true;
     mainEntry = typeof entry === "string" ? { moduleName: entry } : entry;
     if (!desktopApp.nativeApp) {
-        const nativeApp = getNativeApplication();
-        desktopApp.init(nativeApp);
+        desktopApp.init(getNativeApplication());
     }
 }
 

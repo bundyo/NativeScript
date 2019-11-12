@@ -7,13 +7,11 @@ export * from "./stack-layout-common";
 
 export class StackLayout extends StackLayoutBase {
     nativeViewProtected: QWidget;
-    private _layout: FlexLayout;
 
     public createNativeView() {
         const view = new QWidget();
-        this._layout = new FlexLayout();
         view.setObjectName(uniqId());
-        view.setLayout(this._layout);
+        view.setLayout(new FlexLayout());
         view.setInlineStyle("flex-direction: column");
 
         return view; //new org.nativescript.widgets.StackLayout(this._context);

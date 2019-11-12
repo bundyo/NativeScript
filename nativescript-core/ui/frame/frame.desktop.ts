@@ -12,7 +12,7 @@ import {
 } from "./frame-common";
 
 import * as utils from "../../utils/utils";
-import {QMainWindow, QWidget} from "@nodegui/nodegui";
+import {FlexLayout, QGridLayout, QMainWindow, QWidget} from "@nodegui/nodegui";
 
 export * from "./frame-common";
 
@@ -28,16 +28,14 @@ const HMR_REPLACE_TRANSITION = "fade";
 let navDepth = -1;
 
 export class Frame extends FrameBase {
-    public _desktop: QMainWindow;
+    public _desktop: QWidget;
     private _title: string = "NativeScript Application";
 
     constructor() {
         super();
 
-        this._desktop = new QMainWindow(); // new iOSFrame(this);
-        this._desktop.setMinimumSize(640, 480);
-
-        this._desktop.show();
+        this._desktop = new QWidget();
+        this._desktop.setLayout(new QGridLayout());
     }
 
     get title(): string {
@@ -59,11 +57,11 @@ export class Frame extends FrameBase {
     }
 
     setMenuBar(menuBar) {
-        this._desktop.setMenuBar(menuBar);
+        this._modalParent.desktop.setMenuBar(menuBar);
     }
 
     setMenuWidget(menuWidget) {
-        this._desktop.setMenuWidget(menuWidget);
+        this._modalParent.desktop.setMenuWidget(menuWidget);
     }
 
     createNativeView() {
@@ -180,21 +178,34 @@ export class Frame extends FrameBase {
         // }
         //
         // First navigation.
-        if (!this._currentEntry) {
+//        if (!this._currentEntry) {
             // Update action-bar with disabled animations before the initial navigation.
-            this._updateActionBar(backstackEntry.resolvedPage, true);
+            this._updateActionBar(backstackEntry.resolvedPage);
 
-            const centralWidget = this._createPage(backstackEntry);
-            centralWidget.setObjectName("root");
+            let newWidget;
 
-            this._desktop.setCentralWidget(centralWidget);
-
-            if (traceEnabled()) {
-                traceWrite(`${this}.setCentralWidget(${centralWidget}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
+            if (backstackEntry.resolvedPage.nativeViewProtected) {
+                newWidget = backstackEntry.resolvedPage.nativeViewProtected;
+            } else {
+                newWidget = this._createPage(backstackEntry);
+                newWidget.setObjectName("root");
             }
 
+            if (this._currentEntry) {
+                (<QGridLayout>this._desktop.layout).removeWidget(this._currentEntry.resolvedPage.nativeViewProtected);
+            }
+
+            this._desktop.layout.addWidget(newWidget);
+
+            if (traceEnabled()) {
+                traceWrite(`${this}.addWidget(${newWidget}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
+            }
+
+            this.setCurrent(backstackEntry, this._executingContext.navigationType);
+            this._processNavigationQueue(backstackEntry.resolvedPage);
+
             return;
-        }
+//        }
 
         // We should clear the entire history.
         // if (clearHistory) {
@@ -246,25 +257,24 @@ export class Frame extends FrameBase {
         //
         // General case.
 
-        this._desktop.setCentralWidget(backstackEntry.resolvedPage.nativeViewProtected);
-        if (traceEnabled()) {
-            traceWrite(`${this}.setCentralWidget(${backstackEntry.resolvedPage.nativeViewProtected}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
-        }
+        // this._desktop.setCentralWidget(backstackEntry.resolvedPage.nativeViewProtected);
+        // if (traceEnabled()) {
+        //     traceWrite(`${this}.setCentralWidget(${backstackEntry.resolvedPage.nativeViewProtected}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
+        // }
     }
 
     public _goBackCore(backstackEntry: BackstackEntry) {
         super._goBackCore(backstackEntry);
-        // navDepth = backstackEntry[NAV_DEPTH];
-        //
+        navDepth = backstackEntry[NAV_DEPTH];
+
         // let controller = backstackEntry.resolvedPage.ios;
-        // let animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
-        //
-        // this._updateActionBar(backstackEntry.resolvedPage);
-        // if (traceEnabled()) {
-        //     traceWrite(`${this}.popToViewControllerAnimated(${controller}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);
-        // }
-        //
-        // this._ios.controller.popToViewControllerAnimated(controller, animated);
+        let animated = this._currentEntry ? this._getIsAnimatedNavigation(this._currentEntry.entry) : false;
+
+        if (traceEnabled()) {
+            traceWrite(`${this}.popToViewControllerAnimated(${animated}); depth = ${navDepth}`, traceCategories.Navigation);
+        }
+
+        this._navigateCore(backstackEntry);
     }
 
     public _updateActionBar(page?: Page, disableNavBarAnimation: boolean = false): void {

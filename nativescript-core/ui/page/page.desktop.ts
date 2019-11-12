@@ -5,6 +5,7 @@ import { View } from "../core/view/view.desktop"
 import { FlexLayout, NodeWidget, QGridLayout, QWidget } from "@nodegui/nodegui";
 import { device } from "../../platform";
 import { profile } from "../../profiling";
+import {uniqId} from "../../utils/utils.desktop";
 
 export * from "./page-common";
 
@@ -14,6 +15,8 @@ const STATUS_BAR_DARK_BCKG = 1711276032;
 
 export class Page extends PageBase {
     public nativeViewProtected: QWidget;
+    private _actionBarView: View;
+    private _contentView: View;
     private _actionBarWidget: QWidget;
     private _contentWidget: QWidget;
 
@@ -21,6 +24,24 @@ export class Page extends PageBase {
         const view = new QWidget();
         view.setObjectName("root");
         view.setLayout(new FlexLayout());
+
+        this._actionBarWidget = new QWidget;
+        this._actionBarWidget.setObjectName(uniqId());
+        this._actionBarWidget.setLayout(new FlexLayout());
+        this._actionBarWidget.setInlineStyle("height: 60");
+
+        this._contentWidget = new QWidget;
+        this._contentWidget.setObjectName(uniqId());
+        this._contentWidget.setLayout(new FlexLayout());
+        this._contentWidget.setInlineStyle("flex: 1;");
+
+        view.layout.addWidget(this._actionBarWidget);
+        view.layout.addWidget(this._contentWidget);
+
+        (<View><unknown>this).styles
+            .set("padding-right", 17) // Probably scroller size?!
+            .set("flex-direction", "column")
+            .apply();
 
         return view;
     }
@@ -35,17 +56,18 @@ export class Page extends PageBase {
 
         if (this.nativeViewProtected && view.nativeViewProtected) {
             if (view instanceof ActionBar) {
-                this._actionBarWidget = view.nativeViewProtected;
-                widget = this.nativeViewProtected.layout.addWidget(view.nativeViewProtected);
-                (<View>view).styles.set("min-height", 50).apply();
+                this._actionBarView = view;
+                widget = this._actionBarWidget.layout.addWidget(view.nativeViewProtected);
 
-                if (this._contentWidget) {
-                    (<FlexLayout>this.nativeViewProtected.layout).removeWidget(this._contentWidget);
-                    this.nativeViewProtected.layout.addWidget(this._contentWidget);
-                }
+                (<View>view).styles
+                    .set("height", 60)
+                    .apply();
             } else {
-                this._contentWidget = view.nativeViewProtected;
-                widget = this.nativeViewProtected.layout.addWidget(view.nativeViewProtected);
+                this._contentView = view;
+                widget = this._contentWidget.layout.addWidget(view.nativeViewProtected);
+
+                (<View>this._contentView).styles
+                    .set("flex", "1")
             }
         }
 

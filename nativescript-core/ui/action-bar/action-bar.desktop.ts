@@ -1,6 +1,6 @@
 import { ActionItem as ActionItemDefinition } from ".";
 import {
-    ActionItemBase, ActionBarBase, isVisible, View,
+    ActionItemBase, ActionBarBase, isVisible,
     colorProperty, backgroundColorProperty,
     backgroundInternalProperty, flatProperty,
     layout, Color, traceMissingIcon
@@ -9,7 +9,7 @@ import { ImageSource } from "../../image-source";
 import { desktop as desktopUtils, isFontIconURI } from "../../utils/utils";
 import { FlexLayout, QGridLayout, QLabel, QWidget } from "@nodegui/nodegui";
 import { uniqId } from "../../utils/utils.desktop";
-import { StyleList } from "../core/view/view.desktop";
+import { View, StyleList } from "../core/view/view.desktop";
 
 export * from "./action-bar-common";
 
@@ -52,6 +52,7 @@ export class ActionItem extends ActionItemBase {
         systemIcon: undefined
     };
     private _label: QLabel;
+    public styles: StyleList = new StyleList(this);
     public nativeViewProtected: QWidget;
 
     public createNativeView() {
@@ -68,13 +69,17 @@ export class ActionItem extends ActionItemBase {
         view.addEventListener("clicked", menuItemClickListener.bind(this, this));
         (<any>view).menuItemClickListener = menuItemClickListener;
 
-
         this._label = new QLabel();
         view.layout.addWidget(this._label);
     }
 
     public _addViewToNativeVisualTree(child: View): boolean {
         super._addViewToNativeVisualTree(child);
+
+        this.styles
+            .set("align-items", "center")
+            .set("justify-content", "space-around")
+            .apply();
 
         if (this.nativeViewProtected && child.nativeViewProtected) {
             (<FlexLayout>this.nativeViewProtected.layout).removeWidget(this._label);
@@ -143,23 +148,31 @@ export class ActionBar extends ActionBarBase {
     public createNativeView(): QWidget {
         const view = new QWidget();
         view.setObjectName(uniqId());
-        view.setLayout(new QGridLayout());
+        view.setLayout(new FlexLayout());
+        this.styles
+            //.set("align-items", "flex-start")
+            .set("justify-content", "center")
+            .set("flex-direction", "row")
+            .apply();
 
         this._leftWidget = new QWidget();
         this._leftWidget.setObjectName(uniqId());
         this._leftWidget.setLayout(new FlexLayout());
+        this._leftWidget.setInlineStyle("flex-direction: row; flex: 1; align-items: center; justify-content: flex-start;");
 
         view.layout.addWidget(this._leftWidget, 0, 0);
 
         this._titleWidget = new QWidget();
         this._titleWidget.setObjectName(uniqId());
         this._titleWidget.setLayout(new FlexLayout());
+        this._titleWidget.setInlineStyle("flex: 0; align-items: center; justify-content: center;");
 
-        view.layout.addWidget(this._titleWidget, 0, 1);
+        view.layout.addWidget(this._titleWidget, 0 ,1);
 
         this._rightWidget = new QWidget();
         this._rightWidget.setObjectName(uniqId());
         this._rightWidget.setLayout(new FlexLayout());
+        this._rightWidget.setInlineStyle("flex-direction: row; flex: 1; align-items: center; justify-content: flex-end;");
 
         view.layout.addWidget(this._rightWidget, 0, 2);
 
@@ -302,8 +315,10 @@ export class ActionBar extends ActionBarBase {
             }
 
             if (item.nativeViewProtected) {
-                this[`_${item.desktop["position"]}Widget`].layout.removeWidget(item.nativeViewProtected);
-                this[`_${item.desktop["position"]}Widget`].layout.addWidget(item.nativeViewProtected);
+                const layout = this[`_${item.desktop["position"]}Widget`].layout;
+
+                layout.removeWidget(item.nativeViewProtected);
+                layout.addWidget(item.nativeViewProtected);
             }
         }
     }
@@ -324,7 +339,10 @@ export class ActionBar extends ActionBarBase {
         super._addViewToNativeVisualTree(child);
 
         if (this.nativeViewProtected && child.nativeViewProtected) {
-            this.nativeViewProtected.layout.addWidget(child.nativeViewProtected, 0, atIndex);
+            const layout = this[`_${child.desktop["position"]}Widget`].layout;
+
+            layout.removeWidget(child.nativeViewProtected);
+            layout.addWidget(child.nativeViewProtected);
 
             return true;
         }
@@ -336,7 +354,7 @@ export class ActionBar extends ActionBarBase {
         super._removeViewFromNativeVisualTree(child);
 
         if (child.nativeViewProtected) {
-            (<FlexLayout>this.nativeViewProtected.layout).removeWidget(child.nativeViewProtected);
+            this[`_${child.desktop["position"]}Widget`].layout.removeWidget(child.nativeViewProtected);
         }
     }
 
@@ -375,22 +393,22 @@ export class ActionBar extends ActionBarBase {
     }
 
     public onMeasure(widthMeasureSpec: number, heightMeasureSpec: number) {
-        const width = layout.getMeasureSpecSize(widthMeasureSpec);
-        const height = layout.getMeasureSpecSize(heightMeasureSpec);
-
-        if (this.titleView) {
-            View.measureChild(this, this.titleView, UNSPECIFIED, UNSPECIFIED);
-        }
-
-        this.actionItems.getItems().forEach((actionItem) => {
-            const actionView = actionItem.actionView;
-            if (actionView) {
-                View.measureChild(this, actionView, UNSPECIFIED, UNSPECIFIED);
-            }
-        });
-
-        // We ignore our width/height, minWidth/minHeight dimensions because it is against Apple policy to change height of NavigationBar.
-        this.setMeasuredDimension(width, height);
+        // const width = layout.getMeasureSpecSize(widthMeasureSpec);
+        // const height = layout.getMeasureSpecSize(heightMeasureSpec);
+        //
+        // if (this.titleView) {
+        //     View.measureChild(this, this.titleView, UNSPECIFIED, UNSPECIFIED);
+        // }
+        //
+        // this.actionItems.getItems().forEach((actionItem) => {
+        //     const actionView = actionItem.actionView;
+        //     if (actionView) {
+        //         View.measureChild(this, actionView, UNSPECIFIED, UNSPECIFIED);
+        //     }
+        // });
+        //
+        // // We ignore our width/height, minWidth/minHeight dimensions because it is against Apple policy to change height of NavigationBar.
+        // this.setMeasuredDimension(width, height);
     }
 
     public onLayout(left: number, top: number, right: number, bottom: number) {

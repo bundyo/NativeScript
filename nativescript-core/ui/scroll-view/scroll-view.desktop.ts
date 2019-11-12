@@ -4,6 +4,9 @@ import {
     isUserInteractionEnabledProperty, isScrollEnabledProperty, ViewBase
 } from "./scroll-view-common";
 import { QScrollArea } from "@nodegui/nodegui";
+import { View } from "../core/view/view.desktop";
+import { uniqId } from "../../utils/utils.desktop";
+import { desktop, launchEvent } from "../../application/application.desktop";
 
 export * from "./scroll-view-common";
 
@@ -101,15 +104,24 @@ export class ScrollView extends ScrollViewBase {
 
     public createNativeView() {
         const view = new QScrollArea();
-        view.setInlineStyle("flex: 1; width: 100%; height: 100%");
+        view.setObjectName(uniqId());
+        view.setWidgetResizable(true);
 
-        return view; // this.orientation === "horizontal" ? new org.nativescript.widgets.HorizontalScrollView(this._context) : new org.nativescript.widgets.VerticalScrollView(this._context);
+        return view;
     }
 
     _addViewToNativeVisualTree(view: ViewBase, atIndex?: number): boolean {
         this.nativeViewProtected.setWidget(view.nativeViewProtected);
 
-        return super._addViewToNativeVisualTree(view, atIndex);
+        this.parentNode.nativeViewProtected.addEventListener("Resize", this._resizeHandler.bind(this));
+
+        this._resizeHandler();
+
+        return true;
+    }
+
+    _removeViewFromNativeVisualTree(view: ViewBase): void {
+        this.parentNode.nativeViewProtected.removeEventListener("Resize", this._resizeHandler.bind(this));
     }
 
     public initNativeView(): void {
@@ -119,6 +131,21 @@ export class ScrollView extends ScrollViewBase {
         // }
 
         // this.nativeViewProtected.setId(this._androidViewId);
+    }
+
+    _resizeHandler() {
+        this.eachChild((view): boolean => {
+            const size = view.nativeViewProtected.size();
+
+            //console.log();
+
+            (<View><unknown>view).styles
+                .set("min-width", size.width)
+                .set("min-height", size.height)
+                .apply();
+
+            return true;
+        });
     }
 
     public _onOrientationChanged() {
