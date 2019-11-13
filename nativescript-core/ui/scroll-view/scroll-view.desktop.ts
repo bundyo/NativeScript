@@ -113,6 +113,7 @@ export class ScrollView extends ScrollViewBase {
     _addViewToNativeVisualTree(view: ViewBase, atIndex?: number): boolean {
         this.nativeViewProtected.setWidget(view.nativeViewProtected);
 
+        this.parentNode.nativeViewProtected.removeEventListener("Resize", this._resizeHandler.bind(this));
         this.parentNode.nativeViewProtected.addEventListener("Resize", this._resizeHandler.bind(this));
 
         this._resizeHandler();

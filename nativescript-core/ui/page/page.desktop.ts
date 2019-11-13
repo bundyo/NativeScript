@@ -39,7 +39,6 @@ export class Page extends PageBase {
         view.layout.addWidget(this._contentWidget);
 
         (<View><unknown>this).styles
-            .set("padding-right", 17) // Probably scroller size?!
             .set("flex-direction", "column")
             .apply();
 

@@ -12,7 +12,7 @@ import {
 } from "./frame-common";
 
 import * as utils from "../../utils/utils";
-import {FlexLayout, QGridLayout, QMainWindow, QWidget} from "@nodegui/nodegui";
+import {FlexLayout, QStackedWidget, QMainWindow, QWidget} from "@nodegui/nodegui";
 
 export * from "./frame-common";
 
@@ -28,14 +28,13 @@ const HMR_REPLACE_TRANSITION = "fade";
 let navDepth = -1;
 
 export class Frame extends FrameBase {
-    public _desktop: QWidget;
+    public _desktop: QStackedWidget;
     private _title: string = "NativeScript Application";
 
     constructor() {
         super();
 
-        this._desktop = new QWidget();
-        this._desktop.setLayout(new QGridLayout());
+        this._desktop = new QStackedWidget();
     }
 
     get title(): string {
@@ -189,13 +188,11 @@ export class Frame extends FrameBase {
             } else {
                 newWidget = this._createPage(backstackEntry);
                 newWidget.setObjectName("root");
+
+                this._desktop.addWidget(newWidget);
             }
 
-            if (this._currentEntry) {
-                (<QGridLayout>this._desktop.layout).removeWidget(this._currentEntry.resolvedPage.nativeViewProtected);
-            }
-
-            this._desktop.layout.addWidget(newWidget);
+            this._desktop.setCurrentWidget(newWidget);
 
             if (traceEnabled()) {
                 traceWrite(`${this}.addWidget(${newWidget}, ${animated}); depth = ${navDepth}`, traceCategories.Navigation);

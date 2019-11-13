@@ -785,13 +785,13 @@ export class View extends ViewCommon {
     [visibilityProperty.setNative](value: Visibility) {
         switch (value) {
             case "visible":
-                this.styles.set("width", "auto").set("height", "auto");
+                this.nativeViewProtected.show();
                 break;
             case "hidden":
                 this.styles.set("width", "0").set("height", "auto");
                 break;
             case "collapse":
-                this.styles.set("width", "0").set("height", "0");
+                this.nativeViewProtected.hide();
                 break;
             default:
                 throw new Error(`Invalid visibility value: ${value}. Valid values are: visible, hidden, collapse.`);
