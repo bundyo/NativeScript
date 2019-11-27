@@ -1,11 +1,11 @@
-import { PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty } from "./page-common";
+import {PageBase, Color, actionBarHiddenProperty, statusBarStyleProperty, ViewBase} from "./page-common";
 import { ActionBar } from "../action-bar";
-import { View } from "../core/view/view.desktop"
+import { StyleList, View } from "../core/view/view.desktop"
 // @ts-ignore
-import { FlexLayout, NodeWidget, QGridLayout, QWidget } from "@nodegui/nodegui";
+import { FlexLayout, QWidget } from "@nodegui/nodegui";
 import { device } from "../../platform";
 import { profile } from "../../profiling";
-import {uniqId} from "../../utils/utils.desktop";
+import { uniqId } from "../../utils/utils.desktop";
 
 export * from "./page-common";
 
@@ -15,6 +15,7 @@ const STATUS_BAR_DARK_BCKG = 1711276032;
 
 export class Page extends PageBase {
     public nativeViewProtected: QWidget;
+    // public styles: StyleList = new StyleList(this);
     private _actionBarView: View;
     private _contentView: View;
     private _actionBarWidget: QWidget;
@@ -22,55 +23,69 @@ export class Page extends PageBase {
 
     public createNativeView() {
         const view = new QWidget();
-        view.setObjectName("root");
+        view.setObjectName(uniqId());
         view.setLayout(new FlexLayout());
 
         this._actionBarWidget = new QWidget;
         this._actionBarWidget.setObjectName(uniqId());
         this._actionBarWidget.setLayout(new FlexLayout());
-        this._actionBarWidget.setInlineStyle("height: 60");
 
         this._contentWidget = new QWidget;
         this._contentWidget.setObjectName(uniqId());
         this._contentWidget.setLayout(new FlexLayout());
-        this._contentWidget.setInlineStyle("flex: 1;");
 
         view.layout.addWidget(this._actionBarWidget);
         view.layout.addWidget(this._contentWidget);
-
-        (<View><unknown>this).styles
-            .set("flex-direction", "column")
-            .apply();
 
         return view;
     }
 
     public initNativeView(): void {
         super.initNativeView();
-        //this.nativeViewProtected.setBackgroundColor(-1); // White color.
+
+        (<View><unknown>this).styles
+            .set("flex-direction", "column")
+            .apply();
     }
 
     public _addViewToNativeVisualTree(view: View, atIndex?: number): boolean {
-        let widget;
-
         if (this.nativeViewProtected && view.nativeViewProtected) {
             if (view instanceof ActionBar) {
                 this._actionBarView = view;
-                widget = this._actionBarWidget.layout.addWidget(view.nativeViewProtected);
-
-                (<View>view).styles
-                    .set("height", 60)
-                    .apply();
+                this._actionBarWidget.layout.addWidget(view.nativeViewProtected);
             } else {
                 this._contentView = view;
-                widget = this._contentWidget.layout.addWidget(view.nativeViewProtected);
+                this._contentWidget.layout.addWidget(view.nativeViewProtected);
 
-                (<View>this._contentView).styles
+                (<View>view).styles
                     .set("flex", "1")
             }
+
+            (<View>view).styles.apply();
         }
 
-        return widget;
+        this.nativeViewProtected.removeEventListener("Resize", this._resizeHandler.bind(this));
+        this.nativeViewProtected.addEventListener("Resize", this._resizeHandler.bind(this));
+
+        return true;
+    }
+
+    _resizeHandler() {
+        this.eachChild((view): boolean => {
+            const size = this.nativeViewProtected.size();
+
+            this._actionBarWidget.setInlineStyle(`max-height: 60; width: ${size.width()}`);
+            this._contentWidget.setInlineStyle(`width: ${size.width()}; height: ${size.height() - 60}`);
+
+            this._actionBarWidget.layout.update();
+            this._contentWidget.layout.update();
+
+            return true;
+        });
+    }
+
+    _removeViewFromNativeVisualTree(view: ViewBase): void {
+        this.nativeViewProtected.removeEventListener("Resize", this._resizeHandler.bind(this));
     }
 
     @profile

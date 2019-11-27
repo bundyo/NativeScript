@@ -1024,6 +1024,10 @@ export class View extends ViewCommon {
         return "left";
     }
     [horizontalAlignmentProperty.setNative](value: HorizontalAlignment) {
+        if (typeof value !== "string") {
+            console.log("HNotString: ", value);
+        }
+
         switch (value) {
             case "left":
                 this.styles.set("align-self", "flex-start").apply();
@@ -1042,6 +1046,10 @@ export class View extends ViewCommon {
         return "top";
     }
     [verticalAlignmentProperty.setNative](value: VerticalAlignment) {
+        if (typeof value !== "string") {
+            console.log("VNotString: ", value);
+        }
+
         switch (value) {
             case "top":
                 this.styles.set("align-self", "flex-start").apply();

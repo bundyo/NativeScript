@@ -12,7 +12,8 @@ import {
 } from "./frame-common";
 
 import * as utils from "../../utils/utils";
-import {FlexLayout, QStackedWidget, QMainWindow, QWidget} from "@nodegui/nodegui";
+import { QStackedWidget } from "@nodegui/nodegui";
+import {uniqId} from "../../utils/utils.desktop";
 
 export * from "./frame-common";
 
@@ -35,6 +36,7 @@ export class Frame extends FrameBase {
         super();
 
         this._desktop = new QStackedWidget();
+        this._desktop.setObjectName(uniqId());
     }
 
     get title(): string {

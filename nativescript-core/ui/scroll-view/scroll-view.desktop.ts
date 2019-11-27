@@ -3,7 +3,7 @@ import {
     ScrollViewBase, layout, scrollBarIndicatorVisibleProperty,
     isUserInteractionEnabledProperty, isScrollEnabledProperty, ViewBase
 } from "./scroll-view-common";
-import { QScrollArea } from "@nodegui/nodegui";
+import {QScrollArea, QWidget} from "@nodegui/nodegui";
 import { View } from "../core/view/view.desktop";
 import { uniqId } from "../../utils/utils.desktop";
 import { desktop, launchEvent } from "../../application/application.desktop";
@@ -111,6 +111,7 @@ export class ScrollView extends ScrollViewBase {
     }
 
     _addViewToNativeVisualTree(view: ViewBase, atIndex?: number): boolean {
+        view.nativeViewProtected.show();
         this.nativeViewProtected.setWidget(view.nativeViewProtected);
 
         this.parentNode.nativeViewProtected.removeEventListener("Resize", this._resizeHandler.bind(this));
@@ -136,13 +137,13 @@ export class ScrollView extends ScrollViewBase {
 
     _resizeHandler() {
         this.eachChild((view): boolean => {
-            const size = view.nativeViewProtected.size();
+            const size = this.nativeViewProtected.size();
 
-            //console.log();
+            //console.log(`width: ${size.width()}; height: ${size.height()}`);
 
             (<View><unknown>view).styles
-                .set("min-width", size.width)
-                .set("min-height", size.height)
+                .set("min-width", size.width())
+                .set("min-height", size.height())
                 .apply();
 
             return true;

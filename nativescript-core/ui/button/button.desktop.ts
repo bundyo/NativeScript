@@ -9,7 +9,7 @@ import { device } from "../../platform";
 import lazy from "../../utils/lazy";
 import { QPushButton } from "@nodegui/nodegui";
 import { uniqId } from "../../utils/utils.desktop";
-import { View } from "../core/view";
+import { View } from "../core/view/view.desktop";
 import { StyleList } from "../core/view/view.desktop";
 
 export * from "./button-common";
@@ -44,7 +44,6 @@ function initializeClickListener(): void {
 
 export class Button extends ButtonBase {
     nativeViewProtected: QPushButton;
-    styles: StyleList = new StyleList(this);
 
     private _stateListAnimator: any;
     private _highlightedHandler: () => void;
@@ -66,6 +65,9 @@ export class Button extends ButtonBase {
         nativeView.addEventListener("clicked", clickListener.onClick.bind(clickListener));
         (<any>nativeView).clickListener = clickListener;
         this._updateButtonStateChangeHandler(true);
+
+        (<View><unknown>this).styles
+            .apply();
     }
 
     public disposeNativeView() {

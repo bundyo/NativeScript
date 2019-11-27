@@ -1,23 +1,32 @@
 import { StackLayoutBase, orientationProperty } from "./stack-layout-common";
 import { FlexLayout, QWidget } from "@nodegui/nodegui";
 import { uniqId } from "../../../utils/utils.desktop";
-import { View } from "../../core/view";
+import { StyleList } from "../../core/view/view.desktop";
 
 export * from "./stack-layout-common";
 
 export class StackLayout extends StackLayoutBase {
     nativeViewProtected: QWidget;
+    styles: StyleList = new StyleList(this);
 
     public createNativeView() {
         const view = new QWidget();
         view.setObjectName(uniqId());
         view.setLayout(new FlexLayout());
-        view.setInlineStyle("flex-direction: column");
 
-        return view; //new org.nativescript.widgets.StackLayout(this._context);
+        return view;
+    }
+
+    initNativeView(): void {
+        this.styles
+            .set("flex-direction", "column")
+            .set("height", "auto")
+            .apply();
     }
 
     [orientationProperty.setNative](value: "horizontal" | "vertical") {
-        this.nativeViewProtected.setInlineStyle(`flex-direction: ${value === "vertical" ? "column" : "row"}`);
+        this.styles
+            .set("flex-direction", value === "vertical" ? "column" : "row")
+            .apply();
     }
 }

@@ -149,30 +149,25 @@ export class ActionBar extends ActionBarBase {
         const view = new QWidget();
         view.setObjectName(uniqId());
         view.setLayout(new FlexLayout());
-        this.styles
-            //.set("align-items", "flex-start")
-            .set("justify-content", "center")
-            .set("flex-direction", "row")
-            .apply();
 
         this._leftWidget = new QWidget();
         this._leftWidget.setObjectName(uniqId());
         this._leftWidget.setLayout(new FlexLayout());
-        this._leftWidget.setInlineStyle("flex-direction: row; flex: 1; align-items: center; justify-content: flex-start;");
+        this._leftWidget.setInlineStyle("background-color: red; flex-direction: row; flex: 1; align-items: center; justify-content: flex-start;");
 
         view.layout.addWidget(this._leftWidget);
 
         this._titleWidget = new QWidget();
         this._titleWidget.setObjectName(uniqId());
         this._titleWidget.setLayout(new FlexLayout());
-        this._titleWidget.setInlineStyle("flex: 0; align-items: center; justify-content: center;");
+        this._titleWidget.setInlineStyle("background-color: orange; flex: 0; align-items: center; justify-content: center;");
 
         view.layout.addWidget(this._titleWidget);
 
         this._rightWidget = new QWidget();
         this._rightWidget.setObjectName(uniqId());
         this._rightWidget.setLayout(new FlexLayout());
-        this._rightWidget.setInlineStyle("flex-direction: row; flex: 1; align-items: center; justify-content: flex-end;");
+        this._rightWidget.setInlineStyle("background-color: red; flex-direction: row; flex: 1; align-items: center; justify-content: flex-end;");
 
         view.layout.addWidget(this._rightWidget);
 
@@ -181,6 +176,11 @@ export class ActionBar extends ActionBarBase {
 
     initNativeView() {
         this.update();
+
+        this.styles
+            .set("flex", 1)
+            .set("height", "60")
+            .apply();
     }
 
     public _addChildFromBuilder(name: string, value: any) {
