@@ -3,16 +3,15 @@ import {
     ScrollViewBase, layout, scrollBarIndicatorVisibleProperty,
     isUserInteractionEnabledProperty, isScrollEnabledProperty, ViewBase
 } from "./scroll-view-common";
-import {QScrollArea, QWidget} from "@nodegui/nodegui";
+import { QApplication, QScrollArea, QStylePixelMetric } from "@nodegui/nodegui";
 import { View } from "../core/view/view.desktop";
 import { uniqId } from "../../utils/utils.desktop";
-import { desktop, launchEvent } from "../../application/application.desktop";
 
 export * from "./scroll-view-common";
 
 export class ScrollView extends ScrollViewBase {
     nativeViewProtected: QScrollArea;
-    // private _androidViewId: number = -1;
+    private _scrollBarSize: number;
 
     get horizontalOffset(): number {
         const nativeView = this.nativeViewProtected;
@@ -107,6 +106,8 @@ export class ScrollView extends ScrollViewBase {
         view.setObjectName(uniqId());
         view.setWidgetResizable(true);
 
+        this._scrollBarSize = QApplication.style().pixelMetric(QStylePixelMetric.PM_ScrollBarExtent);
+
         return view;
     }
 
@@ -139,11 +140,9 @@ export class ScrollView extends ScrollViewBase {
         this.eachChild((view): boolean => {
             const size = this.nativeViewProtected.size();
 
-            //console.log(`width: ${size.width()}; height: ${size.height()}`);
-
             (<View><unknown>view).styles
-                .set("min-width", size.width())
-                .set("min-height", size.height())
+                .set("min-width", size.width() - this._scrollBarSize)
+                .set("min-height", size.height() - this._scrollBarSize)
                 .apply();
 
             return true;
