@@ -9,7 +9,7 @@
   "license": "Apache-2.0",
   "devDependencies": {
     "@microsoft/api-extractor": "^7.5.0",
-    "@nodegui/nodegui": "file:/www/nodegui/",
+    "@nodegui/nodegui": "0.12.1",
     "@types/chai": "^4.0.4",
     "@types/mocha": "^2.2.42",
     "@types/node": "~10.12.18",
